@@ -96,5 +96,51 @@ namespace XIVRUS_Updater.XIVConfigs.XIVLauncher
 			bool saved = SaveConfigV3(launcherConfig);
 			return saved;
 		}
+
+		public static bool GetThisAppInAutoLaunchEnableStatus(LauncherConfigV3 launcherConfig)
+		{
+			string apppath = WinDirs.GetAppInstallPath();
+			foreach (LauncherConfigV3Addon addon in launcherConfig.AddonListData)
+			{
+				//System.Diagnostics.Trace.WriteLine(addon.Addon.Name);
+				if (addon.Addon.Path.ToLower() == apppath.ToLower())
+				{
+					//System.Diagnostics.Trace.WriteLine(addon.IsEnabled);
+					return addon.IsEnabled;
+				}
+			}
+			return false;
+		}
+
+		public static bool SaveThisAppInAutoLaunchEnableStatus(LauncherConfigV3 launcherConfig, bool enabled)
+		{
+			try
+			{
+				string apppath = WinDirs.GetAppInstallPath();
+				LauncherConfigV3Addon foundAddon = null;
+				foreach (LauncherConfigV3Addon addon in launcherConfig.AddonListData)
+				{
+					if (addon.Addon.Path.ToLower() == apppath.ToLower())
+					{
+						foundAddon = addon;
+						break;
+					}
+				}
+
+				if (foundAddon != null)
+				{
+					foundAddon.IsEnabled = enabled;
+					bool saved = SaveConfigV3(launcherConfig);
+					return saved;
+				}
+
+				return false;
+			}
+			catch (Exception ex)
+			{
+				Logger.Error(String.Format("Message {0}\nStack Trace:\n {1}", ex.Message, ex.StackTrace));
+				return false;
+			}
+		}
 	}
 }

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using NLog;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -23,6 +24,8 @@ namespace XIVRUS_Updater
 	{
 		public MainWindow mainWindow = null;
 		Config config = null;
+		bool autoLaunchWithGame = true;
+		bool needSaveXIVLauncherConfig = false;
 		public SettingsPage()
 		{
 			InitializeComponent();
@@ -40,6 +43,9 @@ namespace XIVRUS_Updater
 
 			DownloadAutoLaunchWithGameCB.IsChecked = config.LaunchWithGame_DownloadAuto;
 
+			autoLaunchWithGame = XIVConfigs.XIVLauncher.LauncherConfigManager.GetThisAppInAutoLaunchEnableStatus(mainWindow.xivLauncherConfig);
+			AddAutoLaunchWithGameCB.IsChecked = autoLaunchWithGame;
+
 		}
 
 		private void CancelSettingsButton_Click(object sender, RoutedEventArgs e)
@@ -52,6 +58,12 @@ namespace XIVRUS_Updater
 		{
 			mainWindow.config = config;
 			ConfigManager.SaveConfig(config);
+			if (needSaveXIVLauncherConfig)
+			{
+				XIVConfigs.XIVLauncher.LauncherConfigManager.SaveThisAppInAutoLaunchEnableStatus(mainWindow.xivLauncherConfig, autoLaunchWithGame);
+				mainWindow.LoadXIVLauncherConfig();
+			}
+
 			mainWindow.SettingsPageFrame.Visibility = Visibility.Collapsed;
 		}
 
@@ -92,6 +104,8 @@ namespace XIVRUS_Updater
 			if ((bool)AddAutoLaunchWithGameCB.IsChecked)
 			{
 				//enable
+				autoLaunchWithGame = true;
+				needSaveXIVLauncherConfig = true;
 			}
 			else
 			{
@@ -99,11 +113,14 @@ namespace XIVRUS_Updater
 				if (result == MessageBoxResult.Yes)
 				{
 					//disable
+					autoLaunchWithGame = false;
+					needSaveXIVLauncherConfig = true;
 				}
 				else
 				{
 					AddAutoLaunchWithGameCB.IsChecked = true;
-
+					autoLaunchWithGame = true;
+					needSaveXIVLauncherConfig = true;
 				}
 			}
         }
